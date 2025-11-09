@@ -23,11 +23,31 @@ st.set_page_config(
 # AUTHENTICATION
 # =====================================================
 
-# Load authentication config
+# Load authentication config from Streamlit secrets (production) or YAML file (local)
 try:
-    config = dict(st.secrets)
+    # Production: Manually build config from Streamlit secrets
+    config = {
+        'credentials': {
+            'usernames': {
+                username: {
+                    'email': st.secrets['credentials']['usernames'][username]['email'],
+                    'name': st.secrets['credentials']['usernames'][username]['name'],
+                    'password': st.secrets['credentials']['usernames'][username]['password']
+                }
+                for username in st.secrets['credentials']['usernames']
+            }
+        },
+        'cookie': {
+            'name': st.secrets['cookie']['name'],
+            'key': st.secrets['cookie']['key'],
+            'expiry_days': st.secrets['cookie']['expiry_days']
+        },
+        'preauthorized': {
+            'emails': list(st.secrets.get('preauthorized', {}).get('emails', []))
+        }
+    }
 except:
-    # Fallback to local file (development only)
+    # Local development: Load from YAML file
     with open('auth_config.yaml') as file:
         config = yaml.load(file, Loader=SafeLoader)
         
@@ -65,12 +85,12 @@ with st.sidebar:
 # SUPABASE CONNECTION
 # =====================================================
 
-# TODO: Replace with your actual Supabase credentials
+# Get credentials from Streamlit secrets (production) or set manually (local)
 try:
     SUPABASE_URL = st.secrets["SUPABASE_URL"]
     SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 except:
-    # Fallback for local development
+    # For local development, replace these with your actual credentials
     SUPABASE_URL = "YOUR_SUPABASE_URL"
     SUPABASE_KEY = "YOUR_SUPABASE_KEY"
 
@@ -185,7 +205,7 @@ if page == "📊 Overview":
         stats = get_stats(df)
         
         # Stats Cards
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             st.metric(
@@ -204,7 +224,6 @@ if page == "📊 Overview":
                 label="👑 Paid Members",
                 value=stats['paid_users']
             )
-        
         
         st.markdown("---")
         
@@ -509,7 +528,7 @@ elif page == "⚙️ Settings":
     
     st.subheader("🔗 Supabase Connection")
     st.code(f"URL: {SUPABASE_URL}")
-    st.info("⚠️ Update credentials in the code file")
+    st.info("⚠️ Update credentials in Streamlit Cloud secrets")
     
     st.markdown("---")
     
