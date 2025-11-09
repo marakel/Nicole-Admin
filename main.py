@@ -60,7 +60,7 @@ authenticator = stauth.Authenticate(
 )
 
 # Login widget
-name, authentication_status, username = authenticator.login('Login', 'main')
+name, authentication_status, username = authenticator.login(location='main')
 
 # Handle authentication states
 if authentication_status == False:
@@ -78,7 +78,7 @@ if authentication_status == None:
 # Logout button in sidebar
 with st.sidebar:
     st.write(f'Welcome *{name}*')
-    authenticator.logout('Logout', 'sidebar')
+    authenticator.logout(location='sidebar')
     st.markdown("---")
 
 # =====================================================
@@ -571,3 +571,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
